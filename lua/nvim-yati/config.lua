@@ -1,6 +1,12 @@
-local get_module_config = require("nvim-treesitter.configs").get_module
-
 local M = {}
+
+---@type YatiUserConfig
+local user_config = {}
+
+---@param opts YatiUserConfig|nil
+function M.setup(opts)
+  user_config = opts or {}
+end
 
 ---@class YatiBuiltinConfig
 ---@field scope? string[]
@@ -35,6 +41,8 @@ local M = {}
 ---@field lazy boolean
 
 ---@class YatiUserConfig
+---@field enable nil|boolean
+---@field disable nil|string[]
 ---@field overrides table<string, YatiLangConfig>
 ---@field default_fallback nil|YatiFallback
 ---@field default_lazy nil|boolean
@@ -143,14 +151,21 @@ end
 
 ---@return YatiUserConfig
 function M.get_user_config()
-  return get_module_config("yati")
+  return user_config
 end
 
 ---@param lang string
 ---@return boolean
 function M.is_supported(lang)
-  local user_config = M.get_user_config()
-  if user_config.overrides and user_config.overrides[lang] then
+  local cfg = M.get_user_config()
+  if cfg.disable then
+    for _, disabled_lang in ipairs(cfg.disable) do
+      if disabled_lang == lang then
+        return false
+      end
+    end
+  end
+  if cfg.overrides and cfg.overrides[lang] then
     return true
   end
   local exists = pcall(require, "nvim-yati.configs." .. lang)

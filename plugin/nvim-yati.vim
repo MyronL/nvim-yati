@@ -1,3 +1,1 @@
-lua << EOF
-require("nvim-yati").init()
-EOF
+" nvim-yati: Users must call require("nvim-yati").setup({}) explicitly

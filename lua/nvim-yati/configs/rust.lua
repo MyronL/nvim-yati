@@ -32,7 +32,9 @@ local config = {
     "block",
     "use_list",
     "macro_definition",
+    "macro_rule",
     "token_tree",
+    "token_tree_pattern",
     "parenthesized_expression",
   },
   scope_open = {

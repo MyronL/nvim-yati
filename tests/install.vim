@@ -5,17 +5,29 @@ set packpath+=./deps
 set rtp+=.
 
 packloadall
-runtime plugin/nvim-yati.vim
 
 lua << EOF
-local parsers = require('nvim-treesitter.parsers')
-local config = require('nvim-yati.config')
-for _, lang in ipairs(parsers.available_parsers()) do
-  if
-    config.is_supported(lang)
-    and #vim.api.nvim_get_runtime_file("parser/" .. lang .. ".so", false) == 0
-  then
-    vim.cmd("TSInstallSync " .. lang)
+require("nvim-yati").setup({})
+
+local test_langs = {
+  "c",
+  "cpp",
+  "graphql",
+  "html",
+  "javascript",
+  "json",
+  "lua",
+  "python",
+  "rust",
+  "toml",
+  "tsx",
+  "typescript",
+  "vue",
+}
+
+for _, lang in ipairs(test_langs) do
+  if #vim.api.nvim_get_runtime_file("parser/" .. lang .. ".so", false) == 0 then
+    vim.cmd("TSInstall! " .. lang)
   end
 end
 EOF

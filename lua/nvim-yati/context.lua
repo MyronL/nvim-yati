@@ -29,12 +29,18 @@ local function create_cross_tree_stack(node, parser, filter)
   end)
 
   table.sort(trees, function(a, b)
-    local is_same = utils.node_contains(a.tstree:root(), b.tstree:root())
-      and utils.node_contains(b.tstree:root(), a.tstree:root())
-    if is_same then
-      return utils.node_contains(a.min_capture_node, b.min_capture_node)
+    local a_contains_b = utils.node_contains(a.tstree:root(), b.tstree:root())
+    local b_contains_a = utils.node_contains(b.tstree:root(), a.tstree:root())
+    if a_contains_b and b_contains_a then
+      -- Roots are identical range; use min_capture_node as tie-breaker
+      local a_cap_b = utils.node_contains(a.min_capture_node, b.min_capture_node)
+      local b_cap_a = utils.node_contains(b.min_capture_node, a.min_capture_node)
+      if a_cap_b and b_cap_a then
+        return false -- equal elements: strict weak ordering requires false
+      end
+      return a_cap_b
     end
-    return utils.node_contains(a.tstree:root(), b.tstree:root())
+    return a_contains_b
   end)
 
   return trees

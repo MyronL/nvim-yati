@@ -22,7 +22,7 @@ private:
 
 void foo() {
   auto f2 = [](int x, int y)
-    -> int {
+  -> int {
       return x + y;
     };
 }

@@ -13,6 +13,19 @@ function M.block_comment_extra_indent(comment, ignores, pattern)
     end
     ctx:parse()
 
+    -- Walk raw node parents (bypassing filter) to find the comment container.
+    -- This handles cases where the comment root (e.g. jsdoc "document") is
+    -- excluded by the node filter and unreachable via ctx:to_parent().
+    local raw = ctx.node
+    while raw and vim.tbl_contains(ignores, nt(raw)) do
+      raw = raw:parent()
+    end
+    if raw and raw:type() == comment and raw:start() ~= ctx.lnum then
+      logger("handler", string.format("Match inner block comment via raw walk (%s), set indent", comment))
+      ctx:set(utils.cur_indent(raw:start(), ctx.bufnr) + 1)
+      return false -- stop further processing
+    end
+
     -- NOTE: this mutates cursor to skip comment initially
     while ctx.node and vim.tbl_contains(ignores, nt(ctx.node)) do
       logger("handler", "Skip initial comment " .. nt(ctx.node))

@@ -2,11 +2,7 @@ local helper = require("tests.helper")
 
 helper.setup()
 
-require("nvim-treesitter.configs").setup({
-  yati = {
-    default_lazy = true,
-  },
-})
+require("nvim-yati").setup({ default_lazy = true })
 
 for _, lang in ipairs(helper.get_test_langs()) do
   describe(lang, function()

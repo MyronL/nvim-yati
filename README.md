@@ -1,10 +1,10 @@
 # nvim-yati
 
-Yet another tree-sitter indent plugin for Neovim.
+A fork of [yioneko/nvim-yati](https://github.com/yioneko/nvim-yati) — yet another tree-sitter indent plugin for Neovim.
 
-This plugin was originally created when the experience of builtin indent module of [nvim-treesitter](https://github.com/nvim-treesitter/nvim-treesitter) was still terrible. Now since it has improved a lot with better community support, this plugin **should be no longer needed** if the upstream one already satisfies you.
+This fork updates the plugin to work with the nvim-treesitter `main` branch, which removed the old module system (`define_modules`, `nvim-treesitter.configs.setup()`, etc.). The plugin now uses a standalone `setup()` function and manages its own lifecycle via autocommands.
 
-If you are still frustrated with the 'official' indent module or interested in this plugin, welcome to provide feedback or submit any issues. Take a glance at [features](#features) to learn about the differences.
+If the builtin nvim-treesitter indent module already satisfies you, this plugin is likely unnecessary. Otherwise, take a glance at [features](#features) to learn about the differences.
 
 <details>
   <summary>
@@ -29,68 +29,55 @@ More languages could be supported by [setup](#setup) or adding config files to [
 
 ## Compatibility
 
-This plugin is always developed based on latest neovim and nvim-treesitter. Please consider upgrading them if there is any compatibility issue.
+Requires **Neovim 0.11+** and **nvim-treesitter `main` branch**.
 
-The plugin has been completely rewritten since `legacy` tag. Use that if you prefer not migrating to the current version for some reason.
+This plugin is always developed based on latest neovim and nvim-treesitter. Please consider upgrading them if there is any compatibility issue.
 
 ## Installation
 
-[packer.nvim](https://github.com/wbthomason/packer.nvim):
+[lazy.nvim](https://github.com/folke/lazy.nvim):
 
 ```lua
-use({ "yioneko/nvim-yati", tag = "*", requires = "nvim-treesitter/nvim-treesitter" })
+{
+  "MyronL/nvim-yati",
+  dependencies = "nvim-treesitter/nvim-treesitter",
+  config = function()
+    require("nvim-yati").setup({})
+  end,
+}
 ```
 
 [vim-plug](https://github.com/junegunn/vim-plug):
 
 ```vim
-Plug "nvim-treesitter/nvim-treesitter"
-Plug "yioneko/nvim-yati", { 'tag': '*' }
+Plug 'nvim-treesitter/nvim-treesitter'
+Plug 'MyronL/nvim-yati'
 ```
+
+Then add `require("nvim-yati").setup({})` to your `init.lua`.
 
 ## Setup
 
-The module is **required** to be enabled to work:
+Add the following to your Neovim config:
 
 ```lua
-require("nvim-treesitter.configs").setup {
-  yati = {
-    enable = true,
-    -- Disable by languages, see `Supported languages`
-    disable = { "python" },
+require("nvim-yati").setup({
+  -- Disable by languages, see `Supported languages`
+  disable = { "python" },
 
-    -- Whether to enable lazy mode (recommend to enable this if bad indent happens frequently)
-    default_lazy = true,
+  -- Whether to enable lazy mode (recommend to enable this if bad indent happens frequently)
+  default_lazy = true,
 
-    -- Determine the fallback method used when we cannot calculate indent by tree-sitter
-    --   "auto": fallback to vim auto indent
-    --   "asis": use current indent as-is
-    --   "cindent": see `:h cindent()`
-    -- Or a custom function return the final indent result.
-    default_fallback = "auto"
-  },
-  indent = {
-    enable = false -- disable builtin indent module
-  }
-}
+  -- Determine the fallback method used when we cannot calculate indent by tree-sitter
+  --   "auto": fallback to vim auto indent
+  --   "asis": use current indent as-is
+  --   "cindent": see `:h cindent()`
+  -- Or a custom function return the final indent result.
+  default_fallback = "auto",
+})
 ```
 
-I also created an accompanying regex-based indent plugin ([vim-tmindent](https://github.com/yioneko/vim-tmindent)) to support saner fallback indent calculation, which could be a drop-in replacement of builtin indent method of vim. See [integration](https://github.com/yioneko/vim-tmindent#nvim-yati) for its fallback setup.
-
-If you want to use the indent module simultaneously, disable the indent module for languages to be handled by this plugin.
-
-```lua
-require("nvim-treesitter.configs").setup {
-  indent = {
-    enable = true,
-    disable = { "html", "javascript" }
-  },
-  -- And optionally, disable the conflict warning emitted by plugin
-  yati = {
-    suppress_conflict_warning = true,
-  },
-}
-```
+The original author also created a regex-based indent plugin ([vim-tmindent](https://github.com/yioneko/vim-tmindent)) for saner fallback indent calculation, which could be a drop-in replacement of the builtin indent method. See [integration](https://github.com/yioneko/vim-tmindent#nvim-yati) for its fallback setup.
 
 Example for a more customized setup:
 
@@ -111,17 +98,14 @@ local js_overrides = vim.tbl_deep_extend("force", get_builtin("javascript"), {
   }
 })
 
-require("nvim-treesitter.configs").setup {
-  yati = {
-    enable = true,
-    disable = { "python" },
-    default_lazy = false,
-    default_fallback = function() return -1 end, -- provide custom fallback indent method
-    overrides = {
-      javascript = js_overrides -- override config by language
-    }
-  }
-}
+require("nvim-yati").setup({
+  disable = { "python" },
+  default_lazy = false,
+  default_fallback = function() return -1 end, -- provide custom fallback indent method
+  overrides = {
+    javascript = js_overrides -- override config by language
+  },
+})
 ```
 
 More technical details goes there (**highly unstable**): [CONFIG.md](./CONFIG.md).
@@ -156,9 +140,10 @@ More technical details goes there (**highly unstable**): [CONFIG.md](./CONFIG.md
 ## Notes
 
 - The calculation result heavily relies on the correct tree-sitter parsing of the code. I'd recommend using plugins like [nvim-autopairs](https://github.com/windwp/nvim-autopairs) or [luasnip](https://github.com/L3MON4D3/LuaSnip) to keep the syntax tree error-free while editing. This should avoid most of the wrong indent calculations.
-- I mainly write javascript so other languages may not receive better support than it, and bad cases for other languages are generally expected. Please create issues for them if possible.
+- The original author mainly writes javascript so other languages may not receive as much support, and edge cases for other languages are expected. Please create issues for them if possible.
 
 ## Credits
 
+- [yioneko/nvim-yati](https://github.com/yioneko/nvim-yati) for the original plugin.
 - [nvim-treesitter](https://github.com/nvim-treesitter/nvim-treesitter) for initial aspiration and test cases.
 - [chfritz/atom-sane-indentation](https://github.com/chfritz/atom-sane-indentation) for algorithm and test cases.

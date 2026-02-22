@@ -1,9 +1,9 @@
 function inject() {
-  const style = css`
-    .foo {
+  const markup = html`
+    <div>
       MARKER
-      color: red;
-    }
+      <span>hello</span>
+    </div>
   `
   const query = gql`
     {

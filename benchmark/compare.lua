@@ -1,5 +1,6 @@
 local yati = require("nvim-yati.indent").indentexpr
-local nvim_ts = require("nvim-treesitter.indent").get_indent
+local ok, nvim_ts_mod = pcall(require, "nvim-treesitter.indent")
+local nvim_ts = ok and nvim_ts_mod.get_indent or nil
 local bench = require("plenary.benchmark")
 
 local sample_file = "bench_sample.lua"
@@ -22,17 +23,19 @@ local function run_test()
   vim.cmd("edit! " .. sample_file)
   vim.bo.shiftwidth = 2
 
-  bench("nvim_ts", {
-    runs = 10,
-    fun = {
-      {
-        "nvim_ts",
-        function()
-          test_indent(nvim_ts)
-        end,
+  if nvim_ts then
+    bench("nvim_ts", {
+      runs = 10,
+      fun = {
+        {
+          "nvim_ts",
+          function()
+            test_indent(nvim_ts)
+          end,
+        },
       },
-    },
-  })
+    })
+  end
   bench("yati", {
     runs = 10,
     fun = {

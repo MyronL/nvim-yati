@@ -9,8 +9,8 @@ set shiftwidth=2
 set expandtab
 
 packloadall
-runtime plugin/nvim-yati.vim
 
 lua << EOF
+require("nvim-yati").setup({})
 -- require("nvim-yati.debug").toggle()
 EOF
